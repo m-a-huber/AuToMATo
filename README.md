@@ -1,6 +1,6 @@
 Code for the paper called ``AuToMATo: A Parameter-Free Persistence-Based Clustering Algorithm'' by Huber, Kali&#353;nik and Schnider.
 
-To run the scripts reproducing the results and figures in the paper, run ``python3 -m eval.eval``, ``python3 -m mapper_applications.make_diabetes_pictures`` or ``python3 -m mapper_applications.make_synth_pictures``.
+To run the scripts reproducing the results and figures in the paper, run `python3 -m eval.eval`, `python3 -m mapper_applications.make_diabetes_pictures` or `python3 -m mapper_applications.make_synth_pictures`.
 
 If the TTK-clustering algorithm is to be included in evaluation (uncomment relevant lines in eval.py to do so), ParaView and the Topology ToolKit must be installed.
 
@@ -18,3 +18,9 @@ __Example of running AuToMATo__
 >>> (aut.labels_ == y).all()
 True
 ```
+
+---
+
+__Requirements__
+
+Required Python dependencies are specified in `Pipfile` and in `requirements.txt` and `requirements-dev.txt`. Developer dependencies indicate those that are needed only when running the scripts that reproduce results and figures from the paper. Dependencies from `Pipfile` can be installed by running `pipenv install` or `pipenv install --dev` (assuming that Pipenv is installed on the system).
