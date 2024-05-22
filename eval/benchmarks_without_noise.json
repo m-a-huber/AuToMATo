@@ -1,0 +1,156 @@
+{
+    "wut": {
+        "circles": [
+            0
+        ],
+        "isolation": [
+            0
+        ],
+        "labirynth": [
+            0
+        ],
+        "mk1": [
+            0
+        ],
+        "mk2": [
+            0
+        ],
+        "mk3": [
+            0
+        ],
+        "mk4": [
+            0
+        ],
+        "smile": [
+            0,
+            1
+        ],
+        "stripes": [
+            0
+        ],
+        "trajectories": [
+            0
+        ],
+        "trapped_lovers": [
+            0
+        ],
+        "twosplashes": [
+            0
+        ],
+        "windows": [
+            0
+        ],
+        "x1": [
+            0
+        ],
+        "x2": [
+            0
+        ],
+        "x3": [
+            0,
+            1
+        ]
+    },
+    "sipu": {
+        "a1": [
+            0
+        ],
+        "a2": [
+            0
+        ],
+        "a3": [
+            0
+        ],
+        "aggregation": [
+            0
+        ],
+        "compound": [
+            0,
+            1,
+            4
+        ],
+        "d31": [
+            0
+        ],
+        "flame": [
+            0
+        ],
+        "jain": [
+            0
+        ],
+        "pathbased": [
+            0,
+            1
+        ],
+        "r15": [
+            0,
+            1,
+            2
+        ],
+        "s1": [
+            0
+        ],
+        "s2": [
+            0
+        ],
+        "spiral": [
+            0
+        ],
+        "unbalance": [
+            0
+        ]
+    },
+    "fcps": {
+        "atom": [
+            0
+        ],
+        "chainlink": [
+            0
+        ],
+        "hepta": [
+            0
+        ],
+        "lsun": [
+            0
+        ],
+        "target": [
+            0
+        ],
+        "tetra": [
+            0
+        ],
+        "twodiamonds": [
+            0
+        ],
+        "wingnut": [
+            0
+        ]
+    },
+    "graves": {
+        "dense": [
+            0
+        ],
+        "line": [
+            0
+        ],
+        "parabolic": [
+            0,
+            1
+        ],
+        "ring": [
+            0
+        ],
+        "ring_outliers": [
+            0
+        ],
+        "zigzag": [
+            0,
+            1
+        ]
+    },
+    "other": {
+        "square": [
+            0
+        ]
+    }
+}

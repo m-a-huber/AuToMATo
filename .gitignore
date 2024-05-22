@@ -1,0 +1,5 @@
+__pycache__/
+/eval/eval_results/
+/eval/pictures/
+/mapper_applications/figures/
+Pipfile.lock
