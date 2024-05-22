@@ -4,7 +4,6 @@ import numpy as np
 import igraph as ig
 from gudhi.clustering.tomato import Tomato
 from gudhi.point_cloud.knn import KNearestNeighbors as KNN
-import automato.persistent_entropy as pe
 from bottleneck_bootstrap import BottleneckBootstrap
 from persistence_plotting import plot_persistences
 
@@ -37,10 +36,8 @@ class Automato(_Customato, ClusterMixin, BaseEstimator):
     the ToMATo clusterer defined by Chazal et al. in [1].
     Specifically, AuToMATo automates the selection of the number of clusters
     based on the persistence diagram produced by the ToMATo clusterer. It does
-    so by separating noise from features in said persistence diagram either by
-    performing a bootstrap on the diagram as described in §6 of [2], or by
-    using one of the entropy-based algorithms introduced by Atienza et al. in
-    [3] and [4].
+    so by separating noise from features in said persistence diagram by
+    performing a bootstrap on the diagram as described in §6 of [2].
 
     Parameters:
         create_outliers (bool, optional): Experimental feature; whether or not
@@ -52,33 +49,11 @@ class Automato(_Customato, ClusterMixin, BaseEstimator):
             point in the underlying neighborhood graph that must be outgoing
             for the point not to be considered an outlier. Must be a
             non-negative number less than or equal to 1. Defaults to 0.1.
-        noise_cancelling (str, optional): A string indicating which method to
-            use for separating topological features from noise. Must be either
-            `"entropy"` or `"bootstrap"`. Defaults to `"bootstrap"`.
-        alpha (float, optional): Confidence level of the bootstrap. Ignored
-            unless `noise_cancelling` is set to `"bootstrap"`. Writing to it
-            automatically adjusts `n_clusters_` and `labels_`.
+        alpha (float, optional): Confidence level of the bootstrap. Writing to
+            it automatically adjusts `n_clusters_` and `labels_`.
             Defaults to 0.35.
         n_bootstrap (int, optional): Number of bootstrap samples to use.
-            Ignored unless `noise_cancelling` is set to `"bootstrap"`.
             Defaults to 1000.
-        separate_inf_pts (bool, optional): Whether or not to ignore points at
-            negative infinity during the noise cancelling process. If True,
-            these points will be added to any features found during noise
-            cancelling performed among just the finite points. Ignored unless
-            `noise_cancelling` is set to `"entropy"`. Defaults to False.
-        use_advanced (bool, optional): Whether or not to use the "advanced"
-            version of the entropy-based method for separating noise from
-            features in a persistence diagram, i.e. the algorithm described in
-            [3] as opposed to that from [4]. Ignored unless `noise_cancelling`
-            is set to `"entropy"`. Defaults to False.
-        beta (float, optional): The exponent to which to raise the thresholds
-            in the "non-advanced" entropy-based version of separating noise
-            from features in a persistence diagram. Must be a positive number
-            or -1. If set to -1, then the base-2-log will be applied to the
-            threshold (without raising them to any power first). Ignored
-            unless `noise_cancelling` is set to `"entropy"`, or if
-            `use_advanced` is set to True. Defaults to -1.
         tomato_params (dict, optional): A dictionary containing arguments
             that are passed to the underlying instance of
             :class:`~gudhi.clustering.tomato.Tomato`, such as `density_type`,
@@ -91,8 +66,7 @@ class Automato(_Customato, ClusterMixin, BaseEstimator):
             that e.g. -1 means using all processors. Defaults to -1.
         random_state (int, optional): If not None, this number will be used as
             random seed in the bootstrap procedure, allowing for
-            reproducibility of results. Ignored unless `noise_cancelling` is
-            set to `"bootstrap"`. Defaults to None.
+            reproducibility of results. Defaults to None.
 
     Attributes:
         points_ (numpy.ndarray of shape (n_samples, dim)): NumPy-array
@@ -104,8 +78,7 @@ class Automato(_Customato, ClusterMixin, BaseEstimator):
         labels_ (numpy.ndarray of shape (n_samples,)): Cluster labels for each
             data point, where outliers are assigned the label -1.
         width_conf_band_ (float): The width of the confidence band found by
-            the bootstrapping procedure when `noise_cancelling` is set to
-            `"bootstrap"`.
+            the bootstrapping procedure.
         diagram_ (numpy.ndarray of shape (n_generators, 2)): A NumPy-array
             whose entries are the birth and death times of each homological
             generator of the superlevel filtration found by the underlying
@@ -128,16 +101,6 @@ class Automato(_Customato, ClusterMixin, BaseEstimator):
             Wasserman, L. (2018). Robust Topological Inference: Distance To a
             Measure and Kernel Distance. Journal of Machine Learning Research,
             18(159), 1–40. http://jmlr.org/papers/v18/15-484.html
-        [3]: Atienza, N., Gonzalez-Diaz, R. & Rucco, M. Persistent entropy for
-            separating topological features from noise in vietoris-rips
-            complexes. J Intell Inf Syst 52, 637–655 (2019).
-            https://doi.org/10.1007/s10844-017-0473-4
-        [4]: Atienza, N., Gonzalez-Diaz, R., Rucco, M. (2016). Separating
-            Topological Noise from Features Using Persistent Entropy. In:
-            Milazzo, P., Varró, D., Wimmer, M. (eds) Software Technologies:
-            Applications and Foundations. STAF 2016. Lecture Notes in Computer
-            Science(), vol 9946. Springer, Cham.
-            https://doi.org/10.1007/978-3-319-50230-4_1
 
     Examples:
         >>> from automato import Automato
@@ -153,12 +116,8 @@ class Automato(_Customato, ClusterMixin, BaseEstimator):
             self,
             create_outliers=False,
             ratio_outliers=0.1,
-            noise_cancelling="bootstrap",
             alpha=0.35,
             n_bootstrap=1000,
-            separate_inf_pts=False,
-            use_advanced=False,
-            beta=-1,
             tomato_params=dict(),
             parallelize=-1,
             random_state=None
@@ -166,12 +125,8 @@ class Automato(_Customato, ClusterMixin, BaseEstimator):
         _Customato.__init__(self, **tomato_params)
         self.create_outliers = create_outliers
         self.ratio_outliers = ratio_outliers
-        self.noise_cancelling = noise_cancelling
         self._alpha = alpha
         self.n_bootstrap = n_bootstrap
-        self.separate_inf_pts = separate_inf_pts
-        self.use_advanced = use_advanced
-        self.beta = beta
         self.tomato_params = tomato_params
         self.parallelize = parallelize
         self.random_state = random_state
@@ -182,7 +137,7 @@ class Automato(_Customato, ClusterMixin, BaseEstimator):
 
     @alpha.setter
     def alpha(self, alpha):
-        if alpha == self._alpha or self.noise_cancelling != "bootstrap":
+        if alpha == self._alpha:
             pass
         else:
             check_is_fitted(self, attributes="_bootstrapper")
@@ -332,54 +287,26 @@ class Automato(_Customato, ClusterMixin, BaseEstimator):
             [infinite_birth, -np.inf]
             for infinite_birth in self.max_weight_per_cc_
         ])
-        if self.noise_cancelling == "entropy":
-            if self.density_type_.startswith("log"):
-                self._min_weight_ = np.min(self.weights_)
-            else:
-                self._min_weight_ = 0
-            infinite_pts[:, 1] = self._min_weight_
         return _sort_by_lifetimes(finite_pts), _sort_by_lifetimes(infinite_pts)
 
     def _cancel_noise_automato(self):
-        if self.noise_cancelling == "bootstrap":
-            self._bootstrapper = BottleneckBootstrap(
-                estimator=_Customato,
-                alpha=self.alpha,
-                n_bootstrap=self.n_bootstrap,
-                parallelize=self.parallelize,
-                estimator_params=self.tomato_params,
-                random_state=self.random_state
-            )
-            self._bootstrapper.fit(
-                X=self.points_,
-                estimator_fit_params=self.tomato_fit_params
-            )
-            cleaned_pts = np.concatenate(
-                self._bootstrapper.cleaned_persistence_
-            )
-            self.width_conf_band_ = self._bootstrapper.width_conf_band_
-            return cleaned_pts
-        elif self.noise_cancelling == "entropy":
-            if self.separate_inf_pts:
-                pts_to_clean = -self._finite_pts_
-            else:
-                pts_to_clean = -self.diagram_
-            cleaned_pts, relative_entropies = pe.cancel_noise(
-                [pts_to_clean],
-                homology_dimensions=[0],
-                use_advanced=self.use_advanced,
-                beta=self.beta
-            )
-            self._relative_entropies_ = relative_entropies
-            if self.separate_inf_pts:
-                return np.concatenate([
-                    cleaned_pts,
-                    self._infinite_pts_
-                ])
-            else:
-                return cleaned_pts
-        else:
-            raise ValueError("Invalid value for `noise_cancelling`.")
+        self._bootstrapper = BottleneckBootstrap(
+            estimator=_Customato,
+            alpha=self.alpha,
+            n_bootstrap=self.n_bootstrap,
+            parallelize=self.parallelize,
+            estimator_params=self.tomato_params,
+            random_state=self.random_state
+        )
+        self._bootstrapper.fit(
+            X=self.points_,
+            estimator_fit_params=self.tomato_fit_params
+        )
+        cleaned_pts = np.concatenate(
+            self._bootstrapper.cleaned_persistence_
+        )
+        self.width_conf_band_ = self._bootstrapper.width_conf_band_
+        return cleaned_pts
 
     def plot_diagram(
         self,
@@ -390,9 +317,8 @@ class Automato(_Customato, ClusterMixin, BaseEstimator):
         resp. its underlying ToMATo instance.
         In the resulting plot, points are colored according to whether or not
         they correspond to clusters that survive until infinity in the
-        superlevel filtration. Moreover, if the attribute `noise_cancelling`
-        of the AuToMATo instance is set to `"bootstrap"`, the corresponding
-        cutoff line is displayed.
+        superlevel filtration. Moreover, the corresponding cutoff line is
+        displayed.
 
         Args:
             to_scale (bool, optional): Whether or not to use the same scale on
