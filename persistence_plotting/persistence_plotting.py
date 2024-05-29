@@ -260,14 +260,20 @@ def plot_persistences(
         extra_space_factor = 0.05
         has_posinfinite_death = np.any(posinfinite_mask[:, 1])
         if has_posinfinite_death:
-            posinfinity_val = max_yval + 0.05 * yparameter_range
+            posinfinity_val = max(
+                max_xval + 0.05 * xparameter_range,
+                max_yval + 0.05 * yparameter_range
+            )
             posinfinity_val_list.append(posinfinity_val)
             extra_space_factor += 0.05
         else:
             posinfinity_val_list.append(None)
         has_neginfinite_death = np.any(neginfinite_mask[:, 1])
         if has_neginfinite_death:
-            neginfinity_val = min_yval - 0.05 * yparameter_range
+            neginfinity_val = min(
+                min_xval - 0.05 * xparameter_range,
+                min_yval - 0.05 * yparameter_range
+            )
             neginfinity_val_list.append(neginfinity_val)
             extra_space_factor += 0.05
         else:
