@@ -1,5 +1,5 @@
 # Code to recreate results of experiments
-# Uncomment lines 10, 84-86, 97 and 108 to include TTK-clustering algorithm
+# Uncomment lines 10, 88-90, 101 and 113 to include TTK-clustering algorithm
 
 import os
 import json
@@ -16,6 +16,7 @@ from automato import Automato
 from persistence_plotting import cs_wong
 import clustbench as cb
 from warnings import simplefilter
+import plotly.graph_objects as gobj
 
 simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
 pd.options.plotting.backend = "plotly"
@@ -27,7 +28,9 @@ batch_name = "benchmarks_without_noise"
 json_file = f"./eval/{batch_name}.json"
 collapse = False  # whether or not to collapse results across ground truths
 
-random_state = 42  # random state for Automato
+seed = 42  # seed for random states for Automato
+n = 10  # number of Automato iterations
+random_states = np.random.RandomState(seed).choice(100, n, replace=False)
 epsilons = np.linspace(0, 1, 21, dtype="float")[1:]  # [0.05, 0.1, ...,0.95, 1]
 
 # Algorithms for comparison
@@ -36,6 +39,7 @@ clusterers = (
         Automato(
             random_state=random_state,
         )
+        for random_state in random_states
     ]
     + [
         AgglomerativeClustering(
@@ -86,7 +90,7 @@ clusterers = (
     # ]
 )
 clusterer_names = (
-    ["automato"]
+    [f"automato_random_state_{random_state}" for random_state in random_states]
     + [f"linkage_ward_eps_{np.around(epsilon, 2)}" for epsilon in epsilons]
     + [f"linkage_complete_eps_{np.around(epsilon, 2)}" for epsilon in epsilons]
     + [f"linkage_average_eps_{np.around(epsilon, 2)}" for epsilon in epsilons]
@@ -96,17 +100,19 @@ clusterer_names = (
     + ["finch"]
     # + ["ttk"]
 )
-clusterer_shortnames = [
-    "automato",
-    "linkage_ward",
-    "linkage_complete",
-    "linkage_average",
-    "linkage_single",
-    "dbscan",
-    "hdbscan",
-    "finch",
-    # "ttk"
-]
+clusterer_shortnames = (
+    [f"automato_random_state_{random_state}" for random_state in random_states]
+    + [
+        "linkage_ward",
+        "linkage_complete",
+        "linkage_average",
+        "linkage_single",
+        "dbscan",
+        "hdbscan",
+        "finch",
+        # "ttk"
+    ]
+)
 
 # Metrics to compute
 metrics = [
@@ -115,6 +121,7 @@ metrics = [
 metric_names = [
     "fms"
 ]
+collapse_str = "_collapsed" if collapse else ""
 
 
 def vprint(s):
@@ -163,22 +170,13 @@ def fit_eval_clusterers(json_file, clusterers, metrics):
         )
     for clusterer, clusterer_name in zip(clusterers, clusterer_names):
         if clusterer_name in df_clusterers_fitted_with_groundtruths.columns:
-            vprint(f"Found fitted {clusterer_name } on disk, not fitting.")
+            vprint(f"Found fitted {clusterer_name} on disk, not fitting.")
         else:
             vprint(f"Fitting {clusterer_name}...")
             df_clusterers_fitted_with_groundtruths[clusterer_name] = [
                 (clone(clusterer).fit(minmax_scale(X)), y)
                 for X, y, bm_name in get_generator(json_file, with_name=True)
             ]
-            df_clusterers_fitted_with_groundtruths.assign(
-                **{clusterer_name: [
-                    (clone(clusterer).fit(minmax_scale(X)), y)
-                    for X, y, bm_name in get_generator(
-                        json_file,
-                        with_name=True
-                    )
-                ]}
-            )
             vprint(f"Done fitting {clusterer_name}!")
     df_clusterers_fitted_with_groundtruths.to_pickle(filename)
     vprint(f"Saved fitted clusterers with groundtruths to {filename}!")
@@ -193,48 +191,61 @@ def fit_eval_clusterers(json_file, clusterers, metrics):
     vprint(f"Saved fitted clusterers to {filename}!")
     # Compute scores
     for metric, metric_name in zip(metrics, metric_names):
-        filename = f"./eval/eval_results/scores_{metric_name}_{batch_name}.pkl"
-        if os.path.exists(filename):
-            df_scores = pd.read_pickle(filename)
-        else:
-            vprint(f"Computing {metric_name}-scores...")
-            df_scores = pd.DataFrame(
-                data={},
-                index=[
-                    bm_name
-                    for X, y, bm_name in get_generator(
-                        json_file,
-                        with_name=True
-                    )
-                ],
-                dtype=object
-            )
+        vprint(f"Computing {metric_name}-scores...")
+        df_scores = pd.DataFrame(
+            data={},
+            index=[
+                bm_name
+                for X, y, bm_name in get_generator(
+                    json_file,
+                    with_name=True
+                )
+            ],
+            dtype=object
+        )
         for clusterer, clusterer_name in zip(clusterers, clusterer_names):
-            if clusterer_name in df_scores.columns:
-                vprint(
-                    f"Found {metric_name}-scores for {clusterer_name } "
-                    "on disk, not computing."
-                )
-            else:
-                vprint(
-                    f"Computing {metric_name}-score for {clusterer_name}..."
-                )
-                df_scores = df_scores.assign(
-                    **{
-                        clusterer_name:
-                        df_clusterers_fitted_with_groundtruths[
-                            [clusterer_name]
-                        ].apply(
-                            np.vectorize(partial(_apply_metric, metric=metric))
-                        )
-                    }
-                )
-                vprint(
-                    f"Done computing {metric_name}-score for {clusterer_name}!"
-                )
-        df_scores.to_pickle(filename)
+            vprint(
+                f"Computing {metric_name}-score for {clusterer_name}..."
+            )
+            df_scores = df_scores.assign(
+                **{
+                    clusterer_name:
+                    df_clusterers_fitted_with_groundtruths[
+                        [clusterer_name]
+                    ].apply(
+                        np.vectorize(partial(_apply_metric, metric=metric))
+                    )
+                }
+            )
+            vprint(
+                f"Done computing {metric_name}-score for {clusterer_name}!"
+            )
+        # Collapse across ground truths if needed
+        if collapse:
+            df_scores = df_scores.assign(
+                tmp=df_scores.index
+            )
+            df_scores = df_scores.assign(
+                tmp=df_scores["tmp"].apply(lambda s: s[:-2])
+            )
+            df_scores = df_scores.groupby("tmp").max()
+            df_scores.index.name = None
+        aut_cols = [
+            col
+            for col in df_scores.columns
+            if col.startswith("automato_random_state")
+        ]
+        df_scores = df_scores.reindex(sorted(df_scores.columns), axis=1)
+        df_scores.insert(n, "automato_var", df_scores[aut_cols].var(1, ddof=0))
+        df_scores.insert(n, "automato_std", df_scores[aut_cols].std(1))
+        df_scores.insert(n, "automato_mean", df_scores[aut_cols].mean(1))
         # Save scores to disk
-        vprint(f"Saved {metric_name}-scores to {filename}!")
+        filename_out = (
+            f"./eval/eval_results/scores_{metric_name}"
+            + f"{collapse_str}_{batch_name}.pkl"
+        )
+        df_scores.to_pickle(filename_out)
+        vprint(f"Saved {metric_name}-scores to {filename_out}!")
     return
 
 
@@ -248,24 +259,7 @@ def _apply_metric(t, metric):
 
 
 # Create pandas dataframes containing summary of scores
-def get_summary_df(df_scores, shortname, metric_name, collapse=False):
-    if collapse:
-        filename = (
-            "./eval/eval_results/"
-            + f"summary_{metric_name}_{shortname}_collapsed_{batch_name}.pkl"
-        )
-    else:
-        filename = (
-            "./eval/eval_results/"
-            + f"summary_{metric_name}_{shortname}_{batch_name}.pkl"
-        )
-    if os.path.exists(filename):
-        vprint(
-            f"Found {metric_name}-score-summary for "
-            f"{shortname} on disk, not computing."
-        )
-        df_summary_shortname_sorted = pd.read_pickle(filename)
-        return df_summary_shortname_sorted
+def get_summary_df(df_scores, shortname, metric_name):
     vprint(f"Computing {metric_name}-summary for {shortname}...")
     if shortname in [
         "linkage_ward",
@@ -279,7 +273,10 @@ def get_summary_df(df_scores, shortname, metric_name, collapse=False):
             for col in df_scores.columns
             if col.startswith(shortname)
         ]
-        df_summary_shortname = df_scores[["automato"] + filter_cols]
+        df_summary_shortname = df_scores[
+            ["automato_mean", "automato_std", "automato_var"]
+            + filter_cols
+        ]
         shortname_max = f"{shortname}_max"
         shortname_min = f"{shortname}_min"
         df_summary_shortname = df_summary_shortname.assign(
@@ -293,21 +290,23 @@ def get_summary_df(df_scores, shortname, metric_name, collapse=False):
             )}
         )
         df_summary_shortname = df_summary_shortname[
-            ["automato", shortname_max, shortname_min]
+            [
+                "automato_mean",
+                "automato_std",
+                "automato_var",
+                shortname_max,
+                shortname_min
+            ]
         ]
     else:
         df_summary_shortname = df_scores[
-            ["automato", shortname]
+            [
+                "automato_mean",
+                "automato_std",
+                "automato_var",
+                shortname
+            ]
         ]
-    if collapse:
-        df_summary_shortname = df_summary_shortname.assign(
-            tmp=df_summary_shortname.index
-        )
-        df_summary_shortname = df_summary_shortname.assign(
-            tmp=df_summary_shortname["tmp"].apply(lambda s: s[:-2])
-        )
-        df_summary_shortname = df_summary_shortname.groupby("tmp").max()
-        df_summary_shortname.index.name = None
     df_summary_shortname_sorted = df_summary_shortname
     if shortname in [
         "linkage_ward",
@@ -317,16 +316,16 @@ def get_summary_df(df_scores, shortname, metric_name, collapse=False):
         "dbscan"
     ]:
         df_summary_shortname_sorted = df_summary_shortname_sorted.assign(
-            diff=df_summary_shortname_sorted["automato"]
+            diff=df_summary_shortname_sorted["automato_mean"]
             - df_summary_shortname_sorted[f"{shortname}_max"]
         )
     else:
         df_summary_shortname_sorted = df_summary_shortname_sorted.assign(
-            diff=df_summary_shortname_sorted["automato"]
+            diff=df_summary_shortname_sorted["automato_mean"]
             - df_summary_shortname_sorted[shortname]
         )
     df_summary_shortname_sorted = df_summary_shortname_sorted.sort_values(
-        by=["diff", "automato"],
+        by=["diff", "automato_mean"],
         axis=0
     )
     df_summary_shortname_sorted = df_summary_shortname_sorted.drop(
@@ -334,17 +333,26 @@ def get_summary_df(df_scores, shortname, metric_name, collapse=False):
         axis=1
     )
     vprint(f"Done computing {metric_name}-score-summary for {shortname}!")
-    df_summary_shortname_sorted.to_pickle(filename)
+    # Save summary to disk
+    filename_out = (
+        "./eval/eval_results/"
+        + f"summary_{metric_name}_{shortname}{collapse_str}_{batch_name}.pkl"
+    )
+    df_summary_shortname_sorted.to_pickle(filename_out)
     vprint(
         f"Saved {metric_name}-score-summary "
-        f"for {shortname} to {filename}!"
+        f"for {shortname} to {filename_out}!"
     )
     return df_summary_shortname_sorted
 
 
 # Plot summary dataframes
-def plot(df, score):
-    fig = df.T.plot(
+def plot(df, shortname, score):
+    df_plt = df.drop(
+        ["automato_std", "automato_var"],
+        axis=1
+    )
+    fig = df_plt.plot(
         template="simple_white",
         labels=dict(
             index="benchmark",
@@ -357,50 +365,81 @@ def plot(df, score):
         "dot",
         "dashdot"
     ]
-    for i in range(df.shape[0]):
+    for i in range(df_plt.shape[1]):
         i = i % 8
         fig._data_objs[i].line.color = f"rgb{cs_wong.rgbs[i]}"
         fig._data_objs[i].line.dash = dashs[i]
+    # Add bands with std deviation
+    xs = list(df.index)
+    ys_upper = [x + y for x, y in zip(df.automato_mean, df.automato_std)]
+    ys_lower = [x - y for x, y in zip(df.automato_mean, df.automato_std)]
+    fig.add_trace(
+        gobj.Scatter(
+            x=xs+xs[::-1],
+            y=ys_upper+ys_lower[::-1],
+            fill='toself',
+            fillcolor='rgba(0,100,80,0.2)',
+            line=dict(color='rgba(255,255,255,0)'),
+            hoverinfo="skip",
+            showlegend=False
+        )
+    )
+    fig.update_yaxes(rangemode="tozero")
+    # fig.update_yaxes(range=[0, 1])
     fig.update_layout(
         font_family="monospace",
         width=1200,
         height=450,
     )
+    if not os.path.isdir("./eval/pictures"):
+        os.mkdir("./eval/pictures")
+    # Save plot to disk
+    filename_plot = (
+        f"./eval/pictures/summary_graph_{metric_name}_"
+        + f"{shortname}{collapse_str}_{batch_name}.svg"
+    )
+    fig.write_image(filename_plot, scale=2)
+    vprint(
+        f"Saved summary graph for {shortname} "
+        f"to {filename_plot}!"
+    )
     return fig
 
 
 if __name__ == "__main__":
-    fit_eval_clusterers(
-            json_file=json_file,
-            clusterers=clusterers,
-            metrics=metrics
-        )
     for metric_name in metric_names:
-        filename = (
+        filename_scores = (
             "./eval/eval_results/"
-            + f"scores_{metric_name}_{batch_name}.pkl"
+            + f"scores_{metric_name}{collapse_str}_{batch_name}.pkl"
         )
-        df_scores = pd.read_pickle(
-            filename
-        )
-        for shortname in clusterer_shortnames[1:]:
-            df_summary_shortname = get_summary_df(
-                df_scores,
-                shortname,
-                metric_name,
-                collapse=collapse
+        if not os.path.exists(filename_scores):
+            fit_eval_clusterers(
+                json_file=json_file,
+                clusterers=clusterers,
+                metrics=metrics
             )
-            fig = plot(df_summary_shortname.T, metric_name)
-            if not os.path.isdir("./eval/pictures"):
-                os.mkdir("./eval/pictures")
-            if collapse:
-                filename_plot = (
-                    "./eval/pictures/summary_graph_"
-                    + f"{metric_name}_{shortname}_collapsed_{batch_name}.svg"
+        df_scores = pd.read_pickle(
+            filename_scores
+        )
+        for shortname in clusterer_shortnames:
+            if not shortname.startswith("automato_random_state"):
+                filename_summary = (
+                    "./eval/eval_results/"
+                    + f"summary_{metric_name}_{shortname}"
+                    + f"{collapse_str}_{batch_name}.pkl"
                 )
-            else:
+                if not os.path.exists(filename_summary):
+                    get_summary_df(
+                        df_scores,
+                        shortname,
+                        metric_name
+                    )
+                df_summary_shortname = pd.read_pickle(filename_summary)
+                if not os.path.isdir("./eval/pictures"):
+                    os.mkdir("./eval/pictures")
                 filename_plot = (
-                    "./eval/pictures/summary_graph_"
-                    + f"{metric_name}_{shortname}_{batch_name}.svg"
+                    f"./eval/pictures/summary_graph_{metric_name}_"
+                    + f"{shortname}{collapse_str}_{batch_name}.svg"
                 )
-            fig.write_image(filename_plot, scale=2)
+                if not os.path.exists(filename_plot):
+                    plot(df_summary_shortname, shortname, metric_name)
