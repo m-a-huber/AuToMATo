@@ -1,6 +1,6 @@
 import numpy as np
-import plotly.graph_objs as gobj
 import plotly.express as px
+import plotly.graph_objs as gobj
 
 
 def plot_point_cloud(

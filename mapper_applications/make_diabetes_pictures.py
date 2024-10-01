@@ -1,13 +1,15 @@
 # Code to recreate results of Mapper applied to diabetes data
 
+import os
+
+import gtda.mapper as mpr
 import numpy as np
 import pandas as pd
-import os
-from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import DBSCAN, HDBSCAN
-from mapper_applications.eccentricity_subclassed import EccentricitySubclassed
-import gtda.mapper as mpr
+from sklearn.preprocessing import StandardScaler
+
 from automato import Automato
+from mapper_applications.eccentricity_subclassed import EccentricitySubclassed
 
 # Load diabetes data
 df = pd.read_csv("./mapper_applications/chemdiab.csv", index_col=[0])

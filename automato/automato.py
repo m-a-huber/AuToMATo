@@ -1,9 +1,10 @@
-from sklearn.base import ClusterMixin, BaseEstimator
-from sklearn.utils.validation import check_is_fitted
-import numpy as np
 import igraph as ig
+import numpy as np
 from gudhi.clustering.tomato import Tomato
 from gudhi.point_cloud.knn import KNearestNeighbors as KNN
+from sklearn.base import BaseEstimator, ClusterMixin
+from sklearn.utils.validation import check_is_fitted
+
 from bottleneck_bootstrap import BottleneckBootstrap
 from persistence_plotting import plot_persistences
 

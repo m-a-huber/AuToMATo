@@ -58,7 +58,7 @@ def sphere_sampling(n=1000, r=1.0, noise=0.0):
         y = r*np.sin(theta)*np.sin(phi)
         z = r*np.cos(phi)
         return np.array([x, y, z])
-    U_phi_inverse = (lambda y: np.arccos(1-2*y))
+    def U_phi_inverse(y): return np.arccos(1-2*y)
     points = np.array([
         parametrization(
             np.random.uniform(low=0, high=2*np.pi),
@@ -141,10 +141,10 @@ def torus_sampling(n=1000, R=3.0, r=1.0, noise=0.0):
         y = np.sin(theta)*(R + r*np.cos(phi))
         z = r*np.sin(phi)
         return np.array([x, y, z])
-    U_phi = (lambda x: (0.5/np.pi)*(x + r*np.sin(x)/R))
+    def U_phi(x): return (0.5/np.pi)*(x + r*np.sin(x)/R)
 
     def U_phi_inverse(y):
-        U_phi_shifted = (lambda x: U_phi(x) - y)
+        def U_phi_shifted(x): return U_phi(x) - y
         sol = root_scalar(U_phi_shifted, bracket=[0, 2*np.pi])
         return sol.root
     points = np.array([

@@ -1,9 +1,11 @@
 # Code to recreate results of Mapper applied to concentric circles
 
 import os
-from sklearn.datasets import make_circles
-from sklearn.cluster import DBSCAN, HDBSCAN
+
 import gtda.mapper as mpr
+from sklearn.cluster import DBSCAN, HDBSCAN
+from sklearn.datasets import make_circles
+
 from automato import Automato
 from dataset_utils import plotting
 

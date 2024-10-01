@@ -1,10 +1,12 @@
+from copy import deepcopy
+from functools import partial
+
+import numpy as np
+from gudhi import bottleneck_distance
+from joblib import Parallel, delayed
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_is_fitted
-import numpy as np
-from copy import deepcopy
-from gudhi import bottleneck_distance
-from functools import partial
-from joblib import delayed, Parallel
+
 from persistence_plotting import plot_persistences
 
 

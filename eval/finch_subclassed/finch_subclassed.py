@@ -1,6 +1,6 @@
-from sklearn.base import ClusterMixin, BaseEstimator
 import numpy as np
 from finch import FINCH
+from sklearn.base import BaseEstimator, ClusterMixin
 
 
 class FINCHSubclassed(ClusterMixin, BaseEstimator):

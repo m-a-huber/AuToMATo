@@ -1,5 +1,4 @@
-from . import plotting
-from . import sampling
+from . import plotting, sampling
 
 __all__ = [
     "plotting",

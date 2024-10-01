@@ -1,8 +1,9 @@
 import numpy as np
 import plotly.graph_objs as gobj
-from plotly.subplots import make_subplots
-from persistence_plotting import cs_wong
 from gudhi import plot_persistence_barcode
+from plotly.subplots import make_subplots
+
+from persistence_plotting import cs_wong
 
 
 def plot_persistences(
