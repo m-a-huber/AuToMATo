@@ -1,13 +1,20 @@
-from sklearn.base import ClusterMixin, BaseEstimator
+import subprocess
+
 import numpy as np
 import pandas as pd
-import subprocess
 from gudhi.clustering.tomato import Tomato
+from sklearn.base import BaseEstimator, ClusterMixin
+from sklearn.manifold import TSNE
 
 
 class TTKSubclassed(ClusterMixin, BaseEstimator):
     """Subclassed version of the TTK clusterer from [1] to make it compatible
     with the API of scikit-learn.
+
+    Parameters:
+        random_state (int, optional): If not None, this number will be used as
+            random seed in the computation of any tSNE-embeddings, allowing for
+            reproducibility of results. Defaults to None.
 
     References:
         [1]: Cotsakis, R., Shaw, J., Tierny, J., & Levine, J. A. (2021).
@@ -17,9 +24,10 @@ class TTKSubclassed(ClusterMixin, BaseEstimator):
             (pp. 343–357). Springer International Publishing.
     """
     def __init__(
-        self
+        self,
+        random_state=None
     ):
-        pass
+        self.random_state = random_state
 
     def fit(self, X, y=None):
         """Method that fits a TTKSubclassed instance to the point cloud to be
@@ -36,7 +44,7 @@ class TTKSubclassed(ClusterMixin, BaseEstimator):
             :class:`eval.ttk_subclassed.ttk_subclassed.TTKSubclassed`:
                 Fitted instance of the TTK clusterer.
         """
-        df = _arr_to_df(X)
+        df = _X_to_df(X, self.random_state)
         df.to_csv("./eval/ttk_subclassed/tmp_in.csv", index=False)
         subprocess.run(
             ["pvpython", "./eval/ttk_subclassed/ttk_aux.py"],
@@ -55,12 +63,17 @@ class TTKSubclassed(ClusterMixin, BaseEstimator):
         return self
 
 
-def _arr_to_df(arr):
-    columns = ["X", "Y", "Z"]
-    n_feat = arr.shape[1]
+def _X_to_df(X, random_state):
+    n_samples, n_feat = X.shape
+    if n_feat > 2:
+        perplexity = min(30, n_samples-1)
+        X = TSNE(
+            perplexity=perplexity,
+            random_state=random_state
+        ).fit_transform(X)
     df = pd.DataFrame(
-        data=arr,
-        columns=columns[:n_feat]
+        data=X,
+        columns=["X", "Y"]
     )
     return df
 
