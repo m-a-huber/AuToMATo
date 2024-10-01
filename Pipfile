@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 scikit-learn = "*"
-numpy = "*"
+numpy = "~=1.26"
 pandas = "*"
 plotly = "*"
 gudhi = "*"
