@@ -1,22 +1,24 @@
 # Code to recreate results of experiments
-# Uncomment lines 10, 88-90, 101 and 113 to include TTK-clustering algorithm
+# Uncomment lines 20, 90-92, 103 and 115 to include TTK-clustering algorithm
 
-import os
 import json
+import os
 from functools import partial
-from sklearn.base import clone
-from sklearn.cluster import AgglomerativeClustering, DBSCAN, HDBSCAN
-from eval.finch_subclassed.finch_subclassed import FINCHSubclassed
-# from eval.ttk_subclassed.ttk_subclassed import TTKSubclassed
-from sklearn.preprocessing import minmax_scale
-from sklearn.metrics import fowlkes_mallows_score
+from warnings import simplefilter
+
+import clustbench as cb
 import numpy as np
 import pandas as pd
-from automato import Automato
-from persistence_plotting import cs_wong
-import clustbench as cb
-from warnings import simplefilter
 import plotly.graph_objects as gobj
+from sklearn.base import clone
+from sklearn.cluster import DBSCAN, HDBSCAN, AgglomerativeClustering
+from sklearn.metrics import fowlkes_mallows_score
+from sklearn.preprocessing import minmax_scale
+
+from automato import Automato
+from eval.finch_subclassed.finch_subclassed import FINCHSubclassed
+# from eval.ttk_subclassed.ttk_subclassed import TTKSubclassed
+from persistence_plotting import cs_wong
 
 simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
 pd.options.plotting.backend = "plotly"
@@ -28,7 +30,7 @@ batch_name = "benchmarks_without_noise"
 json_file = f"./eval/{batch_name}.json"
 collapse = False  # whether or not to collapse results across ground truths
 
-seed = 42  # seed for random states for Automato
+seed = 42  # seed for random states for Automato and for TTK algorithm
 n = 10  # number of Automato iterations
 random_states = np.random.RandomState(seed).choice(100, n, replace=False)
 epsilons = np.linspace(0, 1, 21, dtype="float")[1:]  # [0.05, 0.1, ...,0.95, 1]
@@ -86,7 +88,7 @@ clusterers = (
         FINCHSubclassed()
     ]
     # + [
-    #     TTKSubclassed()
+    #     TTKSubclassed(random_state=seed)
     # ]
 )
 clusterer_names = (
