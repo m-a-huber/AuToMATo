@@ -24,3 +24,17 @@ True
 __Requirements__
 
 Required Python dependencies are specified in `Pipfile` and in `requirements.txt` and `requirements-dev.txt`. Developer dependencies indicate those that are needed only when running the scripts that reproduce results and figures from the paper. Dependencies from `Pipfile` can be installed by running `pipenv install` or `pipenv install --dev` (assuming that Pipenv is installed on the system).
+
+---
+
+__Example of installing AuToMATo for pipenv users__
+
+```
+$ git clone https://github.com/m-a-huber/AuToMATo
+$ cd AuToMATo
+$ pipenv install
+$ pipenv shell
+$ python
+>>> from automato import Automato
+>>> ...
+```
