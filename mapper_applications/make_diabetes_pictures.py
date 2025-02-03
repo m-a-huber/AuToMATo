@@ -2,11 +2,11 @@
 
 import os
 
-import gtda.mapper as mpr
+import gtda.mapper as mpr  # type: ignore
 import numpy as np
-import pandas as pd
-from sklearn.cluster import DBSCAN, HDBSCAN
-from sklearn.preprocessing import StandardScaler
+import pandas as pd  # type: ignore
+from sklearn.cluster import DBSCAN, HDBSCAN  # type: ignore
+from sklearn.preprocessing import StandardScaler  # type: ignore
 
 from automato import Automato
 from mapper_applications.eccentricity_subclassed import EccentricitySubclassed

@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.optimize import root_scalar
+from scipy.optimize import root_scalar  # type: ignore
 
 
 def sphere_sampling(n=1000, r=1.0, noise=0.0):
@@ -54,14 +54,15 @@ def sphere_sampling(n=1000, r=1.0, noise=0.0):
         )
 
     def parametrization(theta, phi):
-        x = r*np.cos(theta)*np.sin(phi)
-        y = r*np.sin(theta)*np.sin(phi)
-        z = r*np.cos(phi)
+        x = r * np.cos(theta) * np.sin(phi)
+        y = r * np.sin(theta) * np.sin(phi)
+        z = r * np.cos(phi)
         return np.array([x, y, z])
-    def U_phi_inverse(y): return np.arccos(1-2*y)
+
+    def U_phi_inverse(y): return np.arccos(1 - 2 * y)
     points = np.array([
         parametrization(
-            np.random.uniform(low=0, high=2*np.pi),
+            np.random.uniform(low=0, high=2 * np.pi),
             U_phi_inverse(np.random.uniform())
         )
         for _ in range(n)
@@ -137,19 +138,20 @@ def torus_sampling(n=1000, R=3.0, r=1.0, noise=0.0):
         )
 
     def parametrization(theta, phi):
-        x = np.cos(theta)*(R + r*np.cos(phi))
-        y = np.sin(theta)*(R + r*np.cos(phi))
-        z = r*np.sin(phi)
+        x = np.cos(theta) * (R + r * np.cos(phi))
+        y = np.sin(theta) * (R + r * np.cos(phi))
+        z = r * np.sin(phi)
         return np.array([x, y, z])
-    def U_phi(x): return (0.5/np.pi)*(x + r*np.sin(x)/R)
+
+    def U_phi(x): return (0.5 / np.pi) * (x + r * np.sin(x) / R)
 
     def U_phi_inverse(y):
         def U_phi_shifted(x): return U_phi(x) - y
-        sol = root_scalar(U_phi_shifted, bracket=[0, 2*np.pi])
+        sol = root_scalar(U_phi_shifted, bracket=[0, 2 * np.pi])
         return sol.root
     points = np.array([
         parametrization(
-            np.random.uniform(low=0, high=2*np.pi),
+            np.random.uniform(low=0, high=2 * np.pi),
             U_phi_inverse(np.random.uniform())
         )
         for _ in range(n)
@@ -212,13 +214,13 @@ def circle_sampling(n=1000, r=1.0, noise=0.0):
         )
 
     def parametrization(theta):
-        x = r*np.cos(theta)
-        y = r*np.sin(theta)
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
         z = 0
         return np.array([x, y, z])
     points = np.array([
         parametrization(
-            np.random.uniform(low=0, high=2*np.pi)
+            np.random.uniform(low=0, high=2 * np.pi)
         )
         for _ in range(n)
     ])

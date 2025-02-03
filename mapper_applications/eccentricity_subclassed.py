@@ -1,7 +1,10 @@
 import numpy as np
-from scipy.spatial.distance import pdist, squareform
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_array, check_is_fitted
+from scipy.spatial.distance import pdist, squareform  # type: ignore
+from sklearn.base import BaseEstimator, TransformerMixin  # type: ignore
+from sklearn.utils.validation import (  # type: ignore
+    check_array,
+    check_is_fitted,
+)
 
 
 # Taken form giotto-tda and modified to allow for L^{\infty}-metric

@@ -2,10 +2,10 @@ from copy import deepcopy
 from functools import partial
 
 import numpy as np
-from gudhi import bottleneck_distance
-from joblib import Parallel, delayed
-from sklearn.base import BaseEstimator
-from sklearn.utils.validation import check_is_fitted
+from gudhi import bottleneck_distance  # type: ignore
+from joblib import Parallel, delayed  # type: ignore
+from sklearn.base import BaseEstimator  # type: ignore
+from sklearn.utils.validation import check_is_fitted  # type: ignore
 
 from persistence_plotting import plot_persistences
 
@@ -101,7 +101,10 @@ class BottleneckBootstrap(BaseEstimator):
         else:
             self._alpha = alpha
             t_value_new = self._t_value_fcn(alpha)
-            self.width_conf_band_ = (2*t_value_new)/np.sqrt(len(self.points_))
+            self.width_conf_band_ = (
+                (2 * t_value_new)
+                / np.sqrt(len(self.points_))
+            )
             self.cleaned_persistence_ = self._clean_persistence(
                 self.persistence_,
                 self._lifetimes_,
@@ -208,7 +211,7 @@ class BottleneckBootstrap(BaseEstimator):
         dgm = np.concatenate(est.persistence_)
         # Drop points at infinity
         dgm = dgm[np.isfinite(np.diff(dgm, axis=1).reshape(-1,))]
-        return np.sqrt(n)*bottleneck_distance(dgm, dgm_ref)
+        return np.sqrt(n) * bottleneck_distance(dgm, dgm_ref)
 
     @staticmethod
     def _clean_persistence(persistence, lifetimes, width_conf_band_):
@@ -334,5 +337,5 @@ def t_value_fcn(alpha, n_bootstrap, theta_stars_sorted):
     elif alpha == 1:
         return 0
     else:
-        k_hat = int(np.ceil(n_bootstrap*(1-alpha)))
-        return theta_stars_sorted[k_hat-1]
+        k_hat = int(np.ceil(n_bootstrap * (1 - alpha)))
+        return theta_stars_sorted[k_hat - 1]

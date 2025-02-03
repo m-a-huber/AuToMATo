@@ -1,4 +1,4 @@
-import paraview.simple as ps
+import paraview.simple as ps  # type: ignore
 
 # create a new 'CSV Reader'
 clusteringcsv = ps.CSVReader(FileName=["./eval/ttk_subclassed/tmp_in.csv"])
@@ -21,7 +21,7 @@ slice1 = ps.Slice(Input=gaussianResampling1)
 slice1.SliceType = "Plane"
 
 # init the 'Plane' selected for 'SliceType'
-slice1.SliceType.Normal = [0.0, 0.0, 1.0]
+slice1.SliceType.Normal = [0.0, 0.0, 1.0]  # type: ignore
 
 # create a new 'TTK PersistenceDiagram'
 tTKPersistenceDiagram1 = ps.TTKPersistenceDiagram(Input=slice1)

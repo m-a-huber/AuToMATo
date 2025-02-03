@@ -1,7 +1,7 @@
 import numpy as np
-import plotly.graph_objs as gobj
-from gudhi import plot_persistence_barcode
-from plotly.subplots import make_subplots
+import plotly.graph_objs as gobj  # type: ignore
+from gudhi import plot_persistence_barcode  # type: ignore
+from plotly.subplots import make_subplots  # type: ignore
 
 from persistence_plotting import cs_wong
 
@@ -215,7 +215,7 @@ def plot_persistences(
         for dgm in diagrams
     )
     dgms_indexed = tuple(
-        np.c_[dgm, i*np.ones(dgm.shape[0])]
+        np.c_[dgm, i * np.ones(dgm.shape[0])]
         for i, dgm in enumerate(dgms)
     )
     dgms_combined = np.vstack(dgms_indexed)
@@ -325,10 +325,10 @@ def plot_persistences(
             for bandwidth in bandwidths
         ]
         min_yval_display = np.min(
-            [min_yval_display, min_xval_display+np.min(_bandwidths)]
+            [min_yval_display, min_xval_display + np.min(_bandwidths)]
         )
         max_yval_display = np.max(
-            [max_yval_display, max_xval_display+np.max(_bandwidths)]
+            [max_yval_display, max_xval_display + np.max(_bandwidths)]
         )
         yparameter_range = max_yval_display - min_yval_display
         extra_space_factor = 0.05
@@ -339,7 +339,7 @@ def plot_persistences(
         ):
             posinfinity_val_display = np.max([
                 posinfinity_val_display,
-                max_xval_display+np.max(_bandwidths)
+                max_xval_display + np.max(_bandwidths)
             ])
             max_yval_display += extra_yspace
         if any(
@@ -348,11 +348,11 @@ def plot_persistences(
         ):
             neginfinity_val_display = np.min([
                 neginfinity_val_display,
-                min_xval_display+np.min(_bandwidths)
+                min_xval_display + np.min(_bandwidths)
             ])
             min_yval_display -= extra_yspace
 
-    rows = n_diagrams//2 + n_diagrams % 2
+    rows = n_diagrams // 2 + n_diagrams % 2
     cols = min(n_diagrams, 2)
     fig = make_subplots(rows=rows, cols=cols, subplot_titles=titles)
     fig.update_annotations(yshift=25)
@@ -366,7 +366,7 @@ def plot_persistences(
             line={"width": 1, "color": "black"},
             showlegend=False,
             hoverinfo="none"
-            ), row=(i//2)+1, col=(i % 2)+1)
+            ), row=(i // 2) + 1, col=(i % 2) + 1)
 
         diagram = dgms_combined[dgms_combined[:, -1] == i][:, :-1]
         # Add homological generators
@@ -406,7 +406,7 @@ def plot_persistences(
                     size=marker_size
                 ),
                 showlegend=False
-            ), row=(i//2)+1, col=(i % 2)+1)
+            ), row=(i // 2) + 1, col=(i % 2) + 1)
 
     for i, dgm in enumerate(diagrams):
         # Update x-axes
@@ -426,7 +426,7 @@ def plot_persistences(
             "showexponent": "all",
             "exponentformat": "e"
             },
-            row=(i//2)+1, col=(i % 2)+1)
+            row=(i // 2) + 1, col=(i % 2) + 1)
         # Update y-axes
         fig.update_yaxes({
             "title": "Death",
@@ -444,18 +444,18 @@ def plot_persistences(
             "showexponent": "all",
             "exponentformat": "e"
             },
-            row=(i//2)+1, col=(i % 2)+1)
+            row=(i // 2) + 1, col=(i % 2) + 1)
         if to_scale:
             fig.update_xaxes({
                 "scaleanchor": "x",
                 "scaleratio": 1,
                 },
-                row=(i//2)+1, col=(i % 2)+1)
+                row=(i // 2) + 1, col=(i % 2) + 1)
             fig.update_yaxes({
                 "scaleanchor": "x",
                 "scaleratio": 1,
                 },
-                row=(i//2)+1, col=(i % 2)+1)
+                row=(i // 2) + 1, col=(i % 2) + 1)
 
     fig.update_layout(
             width=500 * cols,
@@ -473,7 +473,7 @@ def plot_persistences(
                 line={"dash": "dash", "width": 0.5, "color": "black"},
                 showlegend=False,
                 hoverinfo="none"
-            ), row=(i//2)+1, col=(i % 2)+1)
+            ), row=(i // 2) + 1, col=(i % 2) + 1)
 
     # Add a horizontal dashed line for points with negative death
     for i, dgm in enumerate(diagrams):
@@ -485,7 +485,7 @@ def plot_persistences(
                 line={"dash": "dash", "width": 0.5, "color": "black"},
                 showlegend=False,
                 hoverinfo="none"
-            ), row=(i//2)+1, col=(i % 2)+1)
+            ), row=(i // 2) + 1, col=(i % 2) + 1)
 
     # Add dashed line indicating bandwidths
     for i, dgm in enumerate(diagrams):
@@ -493,12 +493,12 @@ def plot_persistences(
             bandwidth = bandwidths[i]
             fig.add_trace(gobj.Scatter(
                 x=[min_xval_display, max_xval_display],
-                y=[min_xval_display+bandwidth, max_xval_display+bandwidth],
+                y=[min_xval_display + bandwidth, max_xval_display + bandwidth],
                 mode="lines",
                 line={"dash": "dot", "width": 1, "color": "black"},
                 showlegend=False,
                 hoverinfo="none"
-            ), row=(i//2)+1, col=(i % 2)+1)
+            ), row=(i // 2) + 1, col=(i % 2) + 1)
 
     # Add the legend shared across both plots
     dims = np.unique(np.concatenate([arr for arr in homology_dimensions]))
@@ -646,7 +646,7 @@ def _make_plottable(persistence, for_gudhi=False, without_infty=False):
             for row in arr
         ], dtype=object)
     res = np.vstack([
-        np.c_[arr, ix*np.ones(arr.shape[0])]
+        np.c_[arr, ix * np.ones(arr.shape[0])]
         for ix, arr in enumerate(persistence)
     ])
     if without_infty:

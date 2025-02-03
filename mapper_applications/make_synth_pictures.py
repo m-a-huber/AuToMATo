@@ -2,9 +2,9 @@
 
 import os
 
-import gtda.mapper as mpr
-from sklearn.cluster import DBSCAN, HDBSCAN
-from sklearn.datasets import make_circles
+import gtda.mapper as mpr  # type: ignore
+from sklearn.cluster import DBSCAN, HDBSCAN  # type: ignore
+from sklearn.datasets import make_circles  # type: ignore
 
 from automato import Automato
 from dataset_utils import plotting

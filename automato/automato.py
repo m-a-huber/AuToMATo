@@ -1,9 +1,9 @@
-import igraph as ig
+import igraph as ig  # type: ignore
 import numpy as np
-from gudhi.clustering.tomato import Tomato
-from gudhi.point_cloud.knn import KNearestNeighbors as KNN
-from sklearn.base import BaseEstimator, ClusterMixin
-from sklearn.utils.validation import check_is_fitted
+from gudhi.clustering.tomato import Tomato  # type: ignore
+from gudhi.point_cloud.knn import KNearestNeighbors as KNN  # type: ignore
+from sklearn.base import BaseEstimator, ClusterMixin  # type: ignore
+from sklearn.utils.validation import check_is_fitted  # type: ignore
 
 from bottleneck_bootstrap import BottleneckBootstrap
 from persistence_plotting import plot_persistences

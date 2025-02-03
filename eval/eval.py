@@ -1,5 +1,5 @@
 # Code to recreate results of experiments
-# Uncomment lines 20, 90-92, 103 and 115 to include TTK-clustering algorithm
+# Uncomment lines 21, 91-93, 104 and 116 to include TTK-clustering algorithm
 
 import json
 import os
@@ -17,6 +17,7 @@ from sklearn.preprocessing import minmax_scale
 
 from automato import Automato
 from eval.finch_subclassed.finch_subclassed import FINCHSubclassed
+
 # from eval.ttk_subclassed.ttk_subclassed import TTKSubclassed
 from persistence_plotting import cs_wong
 
@@ -377,8 +378,8 @@ def plot(df, shortname, score):
     ys_lower = [x - y for x, y in zip(df.automato_mean, df.automato_std)]
     fig.add_trace(
         gobj.Scatter(
-            x=xs+xs[::-1],
-            y=ys_upper+ys_lower[::-1],
+            x=xs + xs[::-1],
+            y=ys_upper + ys_lower[::-1],
             fill='toself',
             fillcolor='rgba(0,100,80,0.2)',
             line=dict(color='rgba(255,255,255,0)'),

@@ -1,10 +1,10 @@
 import subprocess
 
 import numpy as np
-import pandas as pd
-from gudhi.clustering.tomato import Tomato
-from sklearn.base import BaseEstimator, ClusterMixin
-from sklearn.manifold import TSNE
+import pandas as pd  # type: ignore
+from gudhi.clustering.tomato import Tomato  # type: ignore
+from sklearn.base import BaseEstimator, ClusterMixin  # type: ignore
+from sklearn.manifold import TSNE  # type: ignore
 
 
 class TTKSubclassed(ClusterMixin, BaseEstimator):
@@ -66,7 +66,7 @@ class TTKSubclassed(ClusterMixin, BaseEstimator):
 def _X_to_df(X, random_state):
     n_samples, n_feat = X.shape
     if n_feat > 2:
-        perplexity = min(30, n_samples-1)
+        perplexity = min(30, n_samples - 1)
         X = TSNE(
             perplexity=perplexity,
             random_state=random_state
@@ -83,10 +83,10 @@ def _get_n_clusters(lifetimes):
     thresh = np.inf
     while thresh == np.inf and len(lifetimes) > 2:
         p_n = lifetimes[-1]
-        cond_1 = lifetimes[1] > (1+a)*lifetimes[0] + b*p_n
-        cond_2 = lifetimes[2] > (1+2*a)*lifetimes[0] + 2*b*p_n
+        cond_1 = lifetimes[1] > (1 + a) * lifetimes[0] + b * p_n
+        cond_2 = lifetimes[2] > (1 + 2 * a) * lifetimes[0] + 2 * b * p_n
         if cond_1 and cond_2:
-            thresh = (1+a)*lifetimes[0] + b*p_n
+            thresh = (1 + a) * lifetimes[0] + b * p_n
         lifetimes = lifetimes[1:]
     features = lifetimes[lifetimes > thresh]
     return len(features)
