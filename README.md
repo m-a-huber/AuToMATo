@@ -23,17 +23,17 @@ True
 
 __Requirements__
 
-Required Python dependencies are specified in `Pipfile` and in `requirements.txt` and `requirements-dev.txt`. Developer dependencies indicate those that are needed only when running the scripts that reproduce results and figures from the paper. Dependencies from `Pipfile` can be installed by running `pipenv install` or `pipenv install --dev` (assuming that Pipenv is installed on the system).
+Required Python dependencies are specified in `pyproject.toml`. Developer dependencies indicate those that are needed only in order to run the scripts that reproduce results and figures from the paper, as opposed to using AuToMATo on its own. Provided that `uv` is installed, these dependencies can be installed by running `uv pip instal -r pyproject.toml` (to exclude `dev`-dependencies) and `uv pip install --group dev -r pyproject.toml` (to include `dev`-dependencies). The environment specified in `uv.lock` can be recreated by running `uv sync --no-dev` and `uv sync`, respectively.
 
 ---
 
-__Example of installing AuToMATo for pipenv users__
+__Example of installing AuToMATo for `uv` users__
 
 ```
 $ git clone https://github.com/m-a-huber/AuToMATo
 $ cd AuToMATo
-$ pipenv install
-$ pipenv shell
+$ uv sync --no-dev
+$ source .venv/bin/activate
 $ python
 >>> from automato import Automato
 >>> ...
