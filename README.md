@@ -1,4 +1,4 @@
-Code for the paper called ``AuToMATo: A Parameter-Free Persistence-Based Clustering Algorithm'' by Huber, Kali&#353;nik and Schnider.
+Code for the paper called ``AuToMATo: An Out-Of-The-Box Persistence-Based Clustering Algorithm''.
 
 To run the scripts reproducing the results and figures in the paper, run `python3 -m eval.eval`, `python3 -m mapper_applications.make_diabetes_pictures` or `python3 -m mapper_applications.make_synth_pictures`.
 
@@ -30,7 +30,7 @@ Required Python dependencies are specified in `pyproject.toml`. Developer depend
 __Example of installing AuToMATo for `uv` users__
 
 ```
-$ git clone https://github.com/m-a-huber/AuToMATo
+$ git clone url/to/repo
 $ cd AuToMATo
 $ uv sync --no-dev
 $ source .venv/bin/activate
